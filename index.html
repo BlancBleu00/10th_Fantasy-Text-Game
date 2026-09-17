@@ -78,16 +78,27 @@ input{font-size:16px!important;min-height:48px}
 .recordStrip .charLine{color:#d7c39d;font-weight:650}.recordStrip .worldLine{margin-top:7px;padding-top:7px;border-top:1px solid #2d2b26;color:#969188}.recordStrip b{color:#e2ddd3}
 .recordDay{margin:10px 0 5px;font-size:12px;color:#c5b18d;letter-spacing:.04em}.recordEvent{padding:7px 9px;margin:4px 0;border-left:2px solid #4c483d;background:#191916;font-size:12px;line-height:1.55}.codexFact{padding:9px 10px;margin:6px 0;background:#1d1d19;border-radius:7px;font-size:12px;line-height:1.7}.codexFact b{color:#ccb890}.hiddenHint{color:#82796d;font-style:italic}.regionPill{display:inline-block;margin:3px 4px 3px 0;padding:4px 8px;border:1px solid #4b483e;border-radius:999px;font-size:11px;color:#bdb7aa}.derivedPct{font-variant-numeric:tabular-nums}
 @media(max-width:680px){.recordStrip{margin-top:4px;padding:10px 12px}.recordStrip .charLine,.recordStrip .worldLine{font-size:11px}}
+
+
+/* 1.1 — LIFE PATH / 다중 시작점 / 5계층 인카운터 */
+.v11hud{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(220px,.8fr);gap:8px;margin:0 0 12px}
+.v11card{border:1px solid #3c392f;background:linear-gradient(145deg,#171714,#131310);border-radius:10px;padding:9px 12px;font-size:11px;line-height:1.55;color:#aaa59a}
+.v11card b{color:#d7c39d}.v11threads{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.threadChip{display:inline-flex;align-items:center;gap:4px;border:1px solid #464238;border-radius:999px;padding:3px 7px;color:#aaa69b;font-size:10px}.threadChip.active{border-color:#77694f;color:#d7c39d;background:#201e19}.threadChip.hot{border-color:#7a4d48;color:#d3aaa5;background:#211716}
+.encBadge{display:inline-block;margin-bottom:8px;padding:3px 8px;border:1px solid #514c3e;border-radius:999px;font-size:10px;color:#c3b79f;letter-spacing:.04em}.encBadge.daily{color:#b9b5aa}.encBadge.local{color:#a7b89d}.encBadge.social{color:#b8a6c1}.encBadge.history{color:#c9b18d}.encBadge.strange{color:#bd9292}
+.sceneText .leadDrop{font-family:Georgia,'Times New Roman',serif;font-size:20px;color:#d7c39d}.departureBox{padding:12px 14px;margin:12px 0;border-left:3px solid #6d6049;background:#181713;line-height:1.75}.worldPressure{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:5px}.worldPressure span{padding:4px 6px;border-radius:5px;background:#1e1d19;text-align:center;font-size:10px}.worldPressure b{display:block;font-size:12px;margin-top:2px}
+@media(max-width:680px){.v11hud{grid-template-columns:1fr}.v11card.secondary{display:none}.topbar{position:sticky;top:env(safe-area-inset-top);z-index:12;background:#10100f;padding:5px 0 7px;margin-left:-2px;margin-right:-2px}.recordStrip{margin-bottom:7px}.sceneText{line-height:1.82}.worldPressure{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1 class="title">인간력 30년</h1>
-  <div class="sub">뿌리 아래의 밤 / LIFE & LORE UPDATE 1.0</div>
+  <div class="sub">뿌리 아래의 밤 / LIFE PATH UPDATE 1.1</div>
   <div class="topbar">
     <button onclick="openSheet('status')">상태</button><button onclick="openSheet('skills')">능력/스킬</button><button onclick="openSheet('resonance')">공명</button><button onclick="openSheet('relations')">관계</button><button onclick="openSheet('reputation')">평판</button><button onclick="openSheet('journal')">기록</button><button onclick="saveGame()">저장</button><button onclick="loadGame()">불러오기</button>
   </div>
   <div id="recordStrip" class="recordStrip"></div>
+  <div id="v11hud" class="v11hud"></div>
   <section class="panel">
     <h2 id="sceneTitle"></h2><div id="sceneMeta" class="sceneMeta"></div>
     <div id="sceneText" class="sceneText"></div>
@@ -101,7 +112,7 @@ input{font-size:16px!important;min-height:48px}
 </div>
 <div id="modal" class="modal" onclick="if(event.target===this)closeSheet()"><div class="sheet"><div class="sheetHead"><h2 id="sheetTitle">상태</h2><button class="close" onclick="closeSheet()">닫기</button></div><div class="tabs"><button data-tab="status" onclick="switchSheet('status')">상태</button><button data-tab="skills" onclick="switchSheet('skills')">능력/스킬</button><button data-tab="resonance" onclick="switchSheet('resonance')">공명</button><button data-tab="relations" onclick="switchSheet('relations')">관계</button><button data-tab="reputation" onclick="switchSheet('reputation')">평판</button><button data-tab="journal" onclick="switchSheet('journal')">기록</button></div><div id="sheetContent"></div></div></div>
 <script>
-const VERSION='1.0.0';
+const VERSION='1.1.0';
 const STAT_NAMES={vit:'체력',str:'힘',int:'지능',wis:'지혜',dex:'민첩성'};
 const SECONDARY_NAMES={perception:'눈썰미',socialSense:'눈치'};
 const RES_NAMES={light:'빛',dark:'어둠',fire:'불',water:'물',earth:'대지',life:'생명',death:'죽음',lightning:'전기',wind:'바람'};
@@ -3545,7 +3556,7 @@ render=function(){ensureLife10();render09();updateRecordStrip10()};
 
 // 저장 호환성
 const migrateState09=migrateState;
-migrateState=function(){migrateState09();ensureLife10();for(const cat of Object.keys(REP_NAMES)){state.reputation[cat]??={};state.reputationAwareness[cat]??={};for(const k of Object.keys(REP_NAMES[cat])){if(state.reputation[cat][k]===undefined)state.reputation[cat][k]=0;if(state.reputationAwareness[cat][k]===undefined)state.reputationAwareness[cat][k]=0}}state.version='1.0.0'};
+migrateState=function(){migrateState09();ensureLife10();for(const cat of Object.keys(REP_NAMES)){state.reputation[cat]??={};state.reputationAwareness[cat]??={};for(const k of Object.keys(REP_NAMES[cat])){if(state.reputation[cat][k]===undefined)state.reputation[cat][k]=0;if(state.reputationAwareness[cat][k]===undefined)state.reputationAwareness[cat][k]=0}}state.version='1.1.0'};
 
 // 새 게임용 freshState도 최신 필드를 갖춘다.
 const freshState09=freshState;
@@ -3566,6 +3577,100 @@ freshState=function(){const st=freshState09();ensureLife10();return st};
   },{passive:true});
   document.addEventListener('gesturestart',function(e){e.preventDefault&&e.preventDefault()},{passive:false});
 })();
+
+
+
+// =====================================================================
+// 1.1 LIFE PATH UPDATE
+// 시작점과 메인 진입을 분리하고, 랜덤 인카운터를 일상/지역/사회/역사/기이의 5계층으로 운용한다.
+// =====================================================================
+function ensureV11(){
+  ensureLife10();ensureLifeSystems();
+  state.version='1.1.0';
+  state.mainThreads=state.mainThreads||{fever:0,oldroad:0,under:0,society:0};
+  state.encounterPressure=state.encounterPressure||{daily:8,local:10,social:8,history:5,strange:3};
+  state.ignoredEncounters=state.ignoredEncounters||{};
+  state.departure=state.departure||{reason:null,route:null,arrived:false};
+  state.chapterStart=state.chapterStart||state.originKey;
+}
+function bumpThread(k,v=1){ensureV11();state.mainThreads[k]=clamp((state.mainThreads[k]||0)+v,0,100)}
+function threadLabel11(k){return {fever:'열병',oldroad:'옛길',under:'지하',society:'도시'}[k]||k}
+function activeThreads11(){ensureV11();return Object.entries(state.mainThreads).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])}
+function worldPressure11(){ensureV11();return `<div class="worldPressure"><span>감염<b>${Math.round(state.city.infection)}</b></span><span>불안<b>${Math.round(state.city.panic)}</b></span><span>식량<b>${Math.round(state.city.food)}</b></span><span>도로<b>${Math.round(state.world?.roadSafety??60)}</b></span></div>`}
+function renderV11Hud(){const el=document.getElementById('v11hud');if(!el||!state)return;ensureV11();const th=activeThreads11();const chips=th.length?th.slice(0,4).map(([k,v])=>`<span class="threadChip ${v>=55?'hot':'active'}">${threadLabel11(k)} ${v}</span>`).join(''):'<span class="threadChip">아직 중심 사건 없음</span>';el.innerHTML=`<div class="v11card"><b>지금 이 삶이 붙잡고 있는 것</b><div class="v11threads">${chips}</div></div><div class="v11card secondary"><b>도시와 길의 압력</b>${worldPressure11()}</div>`}
+function encounterCategory11(id){return ENCOUNTER_META_11[id]?.cat||'daily'}
+function encounterBadge11(id){const c=encounterCategory11(id),n={daily:'일상',local:'지역',social:'사회',history:'역사',strange:'기이'}[c];return `<span class="encBadge ${c}">랜덤 인카운터 / ${n}</span>`}
+
+const ORIGIN_DEPARTURE_11={
+ human_farmer:['남쪽 농촌','장터로 보낼 작물 수레가 북문 쪽 우회로 때문에 묶였다. 집에서는 당신이 직접 도시로 가 품삯과 소금값을 알아보라고 한다.','생계가 길을 움직인다.'],
+ orc_farmer:['남쪽 개간촌','밭고랑 아래에서 며칠째 미지근한 바람이 올라온다. 어른들은 배수 문제라 하지만, 오늘 아침 가축 한 마리가 북쪽만 보며 울기 시작했다.','설명되지 않는 땅의 변화가 길을 움직인다.'],
+ human_hunter:['북문 바깥 사냥촌','사냥감이 북쪽 숲에서 사라졌다. 흔적은 도시 쪽이 아니라 오래된 교역로를 따라 끊긴다.','먹고사는 기술이 먼저 이상을 알아챘다.'],
+ dwarf_road:['동서 옛길 보수막사','도로석 셋을 두드렸는데 두 번째 돌만 너무 늦게 울렸다. 감독은 도시 기록관에게 보고서를 직접 전달하라고 한다.','돌의 빈 소리가 당신을 도시로 보낸다.'],
+ elf_north:['북방 대상로','상단이 서부 변경도시 앞에서 둘로 갈라진다. 정식 성문으로 갈지, 오래된 동서교역로 흔적을 따라 우회할지 의견이 갈린다.','여행 자체가 이번 삶의 출발점이다.'],
+ goblin_caravan:['서부 대상로','당신이 속한 대상단은 비 때문에 하루 늦었다. 선두 수레는 변경도시로 갔지만 후미 짐꾼 하나가 돌아오지 않았다.','돈과 사람이 서로 다른 방향에서 당신을 부른다.'],
+ orc_caravan:['대상로 호위 야영지','호위하던 대상단의 짐수레 하나가 밤새 사라졌다. 바퀴 자국은 오래된 북방로 쪽으로 꺾인다.','호위 계약은 목적지를 바꿀 만큼 무겁다.'],
+ human_east_scribe:['서부로 들어온 동부 사절 숙소','사절단의 정식 일정은 며칠 뒤다. 하지만 동부 인쇄물에 실린 오래된 도로 표식과 이 도시 북문 표식이 같은 계통이라는 걸 알아챘다.','문서 한 장이 먼 역사를 현재로 끌고 온다.'],
+ human_east_jiangshi:['외지인 숙소','짐 속에 숨긴 부적의 먹선이 새벽부터 검게 번진다. 죽은 몸 가까이에서만 보이던 반응이다.','가문의 기술을 숨긴 채 원인을 찾아야 한다.'],
+ human_east_martial:['동문 밖 공터','기본기를 끝내고 나니 서쪽 길에서 걸음이 일정하지 않은 피난민들이 들어온다. 전선에서 보던 공포의 걸음과 비슷하다.','몸이 머리보다 먼저 이상을 알아본다.'],
+ human_grayriver:['난민 숙소','회색강에서는 밤마다 맞은편 불빛을 셌다. 이곳에서는 그 습관이 필요 없다고 생각했는데, 새벽 북문 성벽 위 횃불 수가 갑자기 늘었다.','전선에서 배운 감각이 평화로운 도시를 의심하게 만든다.']
+};
+function departureInfo11(){const d=ORIGIN_DEPARTURE_11[state.originKey];if(d)return d;const reg=REGION_NAMES_10[state.birthRegion]||state.culture;if(['human_church','goblin_church','human_healer'].includes(state.originKey))return [reg,'북쪽에서 내려온 환자와 구휼 요청이 평소보다 빨리 늘었다. 누군가는 장터에서 약재와 붕대를 확보해야 한다.','사람을 돌보는 일이 당신을 평소 자리 밖으로 밀어낸다.'];if(['human_merchant','goblin_tinker','dwarf_smith'].includes(state.originKey))return [reg,'비가 그친 뒤 물건값과 운송표가 동시에 흔들렸다. 북문으로 들어와야 할 짐이 오지 않았고, 장부 숫자가 하루 만에 맞지 않기 시작했다.','장사는 이상을 숫자로 먼저 본다.'];if(['human_noble','elf_adopted','elf_church','elf_crafter'].includes(state.originKey))return [reg,'가문이나 공방, 성당에서 변경도시 안쪽으로 심부름을 맡긴다. 겉보기에는 평범하지만 북문과 오래된 길에 관한 이야기가 계속 겹친다.','신분과 관계가 당신의 첫 목적지를 정한다.'];if(['human_soldier','orc_merc'].includes(state.originKey))return [reg,'경비대에서 일손을 구한다는 소식이 왔다. 북문 실종자와 성문 통제가 겹치면서 경험 있는 사람을 찾고 있다.','평범한 일거리가 사건과 맞닿는다.'];return [reg,'오늘 해야 할 일은 평범했다. 하지만 장터, 북문, 오래된 도로에서 서로 무관해 보이는 이상이 같은 날 겹친다.','큰 사건은 당신의 일상 안으로 들어와야 비로소 시작된다.']}
+
+// 모든 프롤로그 뒤에 자동으로 라엔 장면으로 뛰지 않고, 각 삶이 왜 움직이는지부터 묻는다.
+scenes.intro={title:'당신이 원래 있던 곳을 떠나는 이유',location:s=>departureInfo11()[0],onEnter:s=>{ensureV11();if(!hasFlag('1.1 출발점')){flag('1.1 출발점');lifeRecord('출발',`${state.origin}의 삶에서 평소 자리를 떠날 이유가 생겼다.`)}},text:s=>{const [place,problem,meaning]=departureInfo11();return `<span class="leadDrop">사건보다 먼저, 삶이 있었다.</span>\n\n당신은 <b>${state.species}, ${state.origin}</b>이다. ${state.originDesc}\n\n<div class="departureBox"><b>${place}</b><br>${problem}</div>\n${meaning}\n\n지금 이 순간 당신은 세계의 중심이 아니다. 오래된 전쟁도, 중앙 지하의 왕도, 엘프의 노래도 대부분 당신과 상관없는 먼 이야기다. 다만 오늘의 선택이 그 거리부터 바꾸기 시작한다.${chaosWhisper()?`\n\n${chaosWhisper()}`:''}`},choices:s=>[
+ choice('원래 맡은 일과 생계부터 해결하러 간다.','v11_route_livelihood',{do:s=>{s.departure.reason='생계와 의무';bumpThread('society',6);lifeRecord('선택','이상한 소문보다 원래 맡은 일과 생계를 먼저 택했다.')}}),
+ choice('평소와 다른 흔적부터 확인한다.','v11_route_signs',{do:s=>{s.departure.reason='이상 징후';bumpThread('oldroad',7);bumpThread('under',3);lifeRecord('선택','평범하지 않은 흔적을 따라가 보기로 했다.')}}),
+ choice('사람들이 무엇을 두려워하는지부터 듣는다.','v11_route_people',{do:s=>{s.departure.reason='사람과 소문';bumpThread('fever',5);bumpThread('society',4);lifeRecord('선택','사람들의 말과 표정을 먼저 확인하기로 했다.')}}),
+ choice('오늘은 움직이지 않고 상황을 더 본다.','v11_departure_delay',{do:s=>{s.departure.reason='지연';modRes({spirit:2});advance(2,0);state.city.panic+=2;lifeRecord('선택','당장 움직이지 않고 상황이 변하는 것을 지켜봤다.')}})
+]};
+scenes.v11_route_livelihood={title:'먹고사는 길',location:'변경도시로 이어지는 길',onEnter:s=>{advance(0,35);modRes({stamina:-4});s.departure.route='livelihood'},text:s=>`길 위에서 만나는 사람들은 같은 방향으로 가면서도 이유가 다르다. 품삯, 세금, 약재, 편지, 수리할 물건.\n\n변경도시는 모험가가 모이는 장소라기보다 주변 수십 마을의 하루가 모이는 시장이다. 그래서 길 하나가 막히면 물가부터 오르고, 사람 하나가 사라지면 그 사람 몫의 일이 다른 사람에게 넘어간다.\n\n오늘은 북문으로 들어와야 할 수레가 유난히 적다.`,choices:[choice('도시에 들어가 내가 하려던 일부터 한다.','v11_arrival',{do:s=>bumpThread('society',4)}),choice('길가 수레와 마부들에게 북문 사정을 묻는다.','v11_route_people',{do:s=>{gainSkill('persuasion',1);bumpThread('fever',2)}})]};
+scenes.v11_route_signs={title:'흔적은 말을 하지 않는다',location:'변경도시 바깥의 오래된 길',onEnter:s=>{advance(0,30);modRes({stamina:-5});s.departure.route='signs'},text:s=>`평소와 다른 것은 하나뿐이면 우연일 수 있다. 문제는 오늘 아침부터 작은 이상이 여러 개 겹친다는 점이다.\n\n물 빠진 도랑 아래의 미지근한 바람. 짐승 발자국이 갑자기 끊기는 자리. 두드린 뒤 한 박자 늦게 울리는 도로석. 북쪽에서 내려온 사람들의 검은 기침 자국.\n\n어느 하나도 아직 답은 아니다. 그러나 모두 오래된 길과 변경도시 북쪽을 향한다.`,choices:[choice('표지석과 지반부터 살피며 도시 쪽으로 간다.','v11_arrival',{do:s=>{bumpThread('oldroad',5);if(skill('observation')>=2)knowSuspicion('도시 바깥의 여러 이상 징후가 오래된 북방로 주변에 겹친다.')}}),choice('사람이 사는 곳으로 돌아가 증언과 비교한다.','v11_route_people',{do:s=>bumpThread('society',2)})]};
+scenes.v11_route_people={title:'사람은 사실보다 먼저 두려워한다',location:'변경도시 외곽 쉼터',onEnter:s=>{advance(0,25);s.departure.route='people'},text:s=>`쉼터에는 서로 모르는 사람들이 같은 소문을 조금씩 다르게 말한다.\n\n누군가는 북쪽 농가에 열병이 돈다고 하고, 누군가는 공동묘지 흙이 내려앉았다고 한다. 상인은 마부가 사라졌다고 하고, 아이는 밤에 숲에서 사람이 걸어왔다고 한다.\n\n같은 사건인지, 사람들이 불안을 한데 묶고 있는 것인지는 아직 알 수 없다.`,choices:[choice('환자와 구휼 수레가 향한 북문 쪽으로 간다.','v11_arrival',{do:s=>{bumpThread('fever',7);knowSuspicion('북문 열병, 실종, 지반 이상이 같은 시기에 겹치고 있다.')}}),choice('장터에서 실제 가격과 출입 기록부터 확인한다.','v11_arrival',{do:s=>{bumpThread('society',6);gainSkill('trade',1)}})]};
+scenes.v11_departure_delay={title:'움직이지 않는 동안에도',location:s=>departureInfo11()[0],onEnter:s=>{advance(2,0);state.city.infection+=2;state.world.roadSafety=clamp(state.world.roadSafety-2,0,100);scheduleConsequence('v11_delay_echo',1,{})},text:s=>`당신이 움직이지 않는 동안에도 다른 사람들은 움직인다. 수레는 다른 길을 택하고, 환자는 성당으로 옮겨지고, 경비대는 북문 장부에 새로운 이름을 적는다.\n\n정오가 가까워질 무렵, 처음 들었던 소문 가운데 하나가 확인된다. 북쪽에서 돌아오지 않은 사람이 실제로 있다.\n\n아무것도 하지 않는 선택도 시간을 쓴다.`,choices:[choice('이제 변경도시로 향한다.','v11_arrival',{do:s=>{bumpThread('society',2);bumpThread('fever',2)}})]};
+scenes.v11_delay_echo={title:'하루 늦게 돌아온 소문',location:'중앙 장터',text:s=>`${encounterBadge11('v11_delay_echo')}당신이 전날 지켜보기만 했던 사이, 북문 실종 이야기는 장터 전체에 퍼졌다. 사실은 한 사람이었지만 소문 속에서는 셋이 되었다.\n\n시간을 두면 진실이 선명해지는 일도 있다. 반대로 빈자리를 소문이 먼저 채우는 일도 있다.`,choices:[choice('사실과 소문을 따로 적어둔다.',s=>s.random.returnTo||'day1_hub',{do:s=>{knowFact('북문 실종자는 적어도 한 명 실제로 확인되었다.');knowSuspicion('장터에서는 실종자 수가 과장되어 퍼지고 있다.');bumpThread('society',3)},noEncounter:true})]};
+scenes.v11_arrival={title:'변경도시에는 한 개의 입구만 있는 것이 아니다',location:'서부대륙 변경도시 외곽',onEnter:s=>{ensureV11();s.departure.arrived=true;flag('랜덤인카운터 해금');lifeRecord('이동','서부 변경도시에 도착했다.')},text:s=>`성벽이 보인다. 그러나 당신이 무엇을 먼저 보는지는 살아온 삶에 따라 다르다.\n\n상인은 줄어든 수레 수를 보고, 사냥꾼은 성문 가까이까지 내려온 새 발자국을 본다. 성당 사람은 구휼 수레를 보고, 경비 경험이 있는 사람은 창 위에 묻은 진흙과 교대 인원을 본다. 엘프는 인간의 시선과 북방 억양을 먼저 듣고, 동부 출신은 낯선 행정 절차와 익숙하지 않은 평화를 함께 본다.\n\n동문에서는 외지 엘프 하나가 경비병과 말다툼 중이다. 북문에서는 들것이 들어온다. 중앙 장터에서는 소금값이 다시 적힌다. 성벽 밖 오래된 도로석에는 빗물이 고여 있다.\n\n<b>라엔을 만나지 않아도, 폐역참에 가지 않아도, 이 삶은 이미 시작되었다.</b>`,choices:s=>[
+ choice('내 일과 숙소부터 정한다.','day1_hub',{do:s=>bumpThread('society',4),review:s=>'당신은 사건의 이름부터 붙이기보다 오늘 머물 곳과 할 일을 먼저 정합니다.'}),
+ choice('북문으로 들어오는 환자를 따라간다.','church_sick',{do:s=>bumpThread('fever',9),review:s=>'당신은 소문보다 아픈 사람을 먼저 봅니다. 북문의 이상은 여기서 열병이라는 얼굴을 얻습니다.'}),
+ choice('오래된 도로석과 지반을 확인한다.','oldroad_alone',{do:s=>bumpThread('oldroad',9),review:s=>'당신은 사람보다 길에 남은 흔적을 먼저 따라갑니다. 폐역참은 라엔의 사연이 아니라 오래된 교역망의 문제로 처음 모습을 드러냅니다.'}),
+ choice('동문의 말다툼을 보러 간다.','intro_laen',{do:s=>{bumpThread('society',3);bumpThread('oldroad',2)},review:s=>'당신은 동문의 충돌로 향합니다. 그곳에서 라엔을 만나게 되지만, 그는 당신 삶의 시작점이 아니라 오늘 마주친 여러 사람 가운데 하나입니다.'}),
+ choice('가격과 출입 장부를 비교한다.','work_market',{do:s=>bumpThread('society',8),review:s=>'당신은 장터의 숫자를 택합니다. 길이 막히면 전설보다 먼저 가격이 움직입니다.'})
+]};
+
+// 메인 사건은 여러 실마리가 일정 수준 쌓이면 서로 연결된다.
+function syncMainThreads11(){ensureV11();if(hasFlag('검은 실핏줄'))bumpThread('fever',Math.max(0,18-state.mainThreads.fever));if(hasFlag('옛길 첫 공명')||hasFlag('폐역참 도착'))bumpThread('oldroad',Math.max(0,22-state.mainThreads.oldroad));if(hasFlag('검은 문 조우')||hasFlag('지하 맥동 감지'))bumpThread('under',Math.max(0,25-state.mainThreads.under));if(state.city.panic>30||state.world.rumorHeat>25)bumpThread('society',2)}
+const go11base=go;go=function(id){syncMainThreads11();return go11base(id)};
+
+// 5계층 랜덤 인카운터. 무시한 사건은 압력으로 남아 이후 재등장/확대될 수 있다.
+const ENCOUNTER_META_11={
+ enc_beggar:{cat:'daily'},enc_runaway_cart:{cat:'daily'},enc_lost_purse:{cat:'daily'},enc_hungry_child:{cat:'daily'},enc_old_soldier:{cat:'daily'},enc_dead_bird:{cat:'local'},enc_injured_orc:{cat:'social'},enc_lost_elf_child:{cat:'social'},enc_well_quarrel:{cat:'social'},enc_checkpoint:{cat:'social'},enc_guard_bribe:{cat:'social'},enc_price_panic:{cat:'social'},enc_rumor_knot:{cat:'social'},enc_foreign_words:{cat:'history'},enc_wandering_scribe:{cat:'history'},enc_east_broadside:{cat:'history'},enc_jiangshi_talisman:{cat:'history'},enc_martial_caravan:{cat:'history'},enc_current_sailor:{cat:'history'},enc_rain_shrine:{cat:'strange'},enc_black_dog:{cat:'strange'},enc_night_hum:{cat:'strange'},enc_resonant_stone:{cat:'strange'},enc_false_relic:{cat:'strange'},enc_refugee_cart:{cat:'local'},enc_funeral:{cat:'local'},enc_guild_invite:{cat:'social'},enc_pickpocket:{cat:'daily'},
+ enc_jiangshi_scarecrow:{cat:'history',major:true},enc_golem_tax:{cat:'social',major:true},enc_resonance_debt:{cat:'strange',major:true},enc_mithril_knock:{cat:'strange',major:true}
+};
+function encounterWeight11(id){ensureV11();const m=ENCOUNTER_META_11[id]||{cat:'daily'};let w=6+(state.encounterPressure[m.cat]||0);w+=encounterWeight(id)*.45;if(m.major){w*=.32;if(state.day>=4)w*=1.8}if(m.cat==='strange')w+=state.mainThreads.under*.12+(state.chaosResonance||0)*.15;if(m.cat==='history')w+=skill('history')*.7+Math.max(0,lang('eastcommon')-3)*.6;if(m.cat==='social')w+=state.city.panic*.12+state.world.rumorHeat*.1;if(m.cat==='local')w+=(100-state.world.roadSafety)*.1+state.city.infection*.08;return Math.max(.5,w)}
+weightedPick=function(ids){let total=ids.reduce((a,id)=>a+encounterWeight11(id),0),r=rng()*total;for(const id of ids){r-=encounterWeight11(id);if(r<=0)return id}return ids[ids.length-1]};
+function ignoreEncounter11(id,amount=2){ensureV11();const cat=encounterCategory11(id);state.ignoredEncounters[id]=(state.ignoredEncounters[id]||0)+1;state.encounterPressure[cat]=clamp((state.encounterPressure[cat]||0)+amount,0,100);if(cat==='social')state.city.panic=clamp(state.city.panic+1,0,100);if(cat==='local')state.world.roadSafety=clamp(state.world.roadSafety-1,0,100);if(cat==='strange')modChaos(1,'이상 현상을 확인하지 않은 채 지나쳤다')}
+for(const id of ['enc_jiangshi_scarecrow','enc_golem_tax','enc_resonance_debt','enc_mithril_knock'])if(!ENCOUNTER_POOL.includes(id))ENCOUNTER_POOL.push(id);
+
+Object.assign(scenes,{
+ enc_jiangshi_scarecrow:{title:'밭을 지키는 시체',location:'남쪽 개간촌 외곽',onEnter:s=>{advance(0,10);bumpThread('society',2)},text:s=>`${encounterBadge11('enc_jiangshi_scarecrow')}밭 한가운데 허수아비가 서 있다. 가까이 가면 천 아래 손가락 관절이 사람처럼 굽어 있다.\n\n농부는 죽은 사람을 세워둔 것이 아니라며 화를 낸다. “동부식 관절 인형”을 돈 주고 샀다고 한다. 그런데 부적의 먹선은 ${state.originKey==='human_east_jiangshi'?'당신 집안에서 쓰던 오래된 강시 제어식과 너무 닮았다.':'단순한 장식이라고 보기엔 지나치게 규칙적이다.'}\n\n문제는 인형이 어젯밤 밭 끝까지 걸어갔다가 돌아왔다는 증언이다.`,choices:[choice('부적과 관절을 조사한다.',s=>s.random.returnTo,{do:s=>{const r=check({stat:'int',skill:'arcana',diff:62,label:'강시식 판별'});if(r.ok){knowFact('개간촌의 허수아비에는 동부 강시술 계통의 제어식이 쓰였다.');bumpThread('under',5);scheduleConsequence('enc_jiangshi_scarecrow_echo',2)}advance(0,20)},noEncounter:true}),choice('농부에게 밤에는 태워버리라고 한다.',s=>s.random.returnTo,{do:s=>{publicDeed({'factions.farmers':1},'움직이는 허수아비를 태우라고 경고했다','개간촌 농민들이');advance(0,10)},noEncounter:true}),choice('남의 밭일이다. 지나간다.',s=>s.random.returnTo,{do:s=>ignoreEncounter11('enc_jiangshi_scarecrow',6),noEncounter:true})]},
+ enc_jiangshi_scarecrow_echo:{title:'허수아비가 있던 자리',location:'남쪽 개간촌',text:s=>`이틀 뒤, 허수아비가 있던 자리에는 말뚝만 남아 있다. 태운 흔적은 없다. 밭 가장자리에서 도시 쪽으로 향한 맨발 같은 자국이 시작된다.\n\n강시술의 오래된 기술이 단순한 골동품으로 서부까지 흘러온 것인지, 누군가 목적을 갖고 옮긴 것인지는 아직 모른다.`,choices:[choice('흔적을 기록하고 다음 일을 따른다.',s=>s.random.returnTo||'day1_hub',{do:s=>{knowSuspicion('서부에 유입된 강시술 제어물이 스스로 이동했을 가능성이 있다.');bumpThread('under',7)},noEncounter:true})]},
+ enc_golem_tax:{title:'골렘도 통행세를 내야 하는가',location:'남문 검문대',onEnter:s=>advance(0,8),text:s=>`${encounterBadge11('enc_golem_tax')}짐을 끄는 소형 골렘 하나가 남문 앞에 멈췄다. 주인은 장인 길드의 운송 골렘이라며 물건에만 세금을 내면 된다고 주장한다. 경비병은 “스스로 걷는 건 짐승이든 사람이든 통행 인원”이라고 우긴다.\n\n사소해 보이는 말다툼 뒤에는 더 큰 질문이 있다. 골렘이 도구인지, 노동자인지, 누군가의 재산인지. 인간력 30년의 법은 아직 그 질문을 준비하지 못했다.`,choices:[choice('물건이 아니라 운송수단으로 기록하자고 중재한다.',s=>s.random.returnTo,{do:s=>{const r=check({stat:'wis',skill:'persuasion',diff:57,label:'새 규칙 중재'});if(r.ok){modRep('factions','craftsmen',3,'골렘 통행 분쟁을 현실적으로 중재했다');bumpThread('society',3)}advance(0,15)},noEncounter:true}),choice('법에 없으면 일단 사람과 같은 세금을 내게 한다.',s=>s.random.returnTo,{do:s=>{modRep('factions','guard',2,'골렘 통행에 기존 검문 규칙을 적용했다');bumpThread('society',4);advance(0,10)},noEncounter:true}),choice('흥미롭지만 내 일이 아니다.',s=>s.random.returnTo,{do:s=>ignoreEncounter11('enc_golem_tax',4),noEncounter:true})]},
+ enc_resonance_debt:{title:'공명으로 갚는 빚',location:'뒷골목 임시 제단',onEnter:s=>advance(0,8),text:s=>`${encounterBadge11('enc_resonance_debt')}골목 끝 작은 제단 앞에서 남자가 손바닥을 돌 위에 대고 있다. 채권자는 돈 대신 “오늘 한 번의 불 공명”을 빚으로 받겠다고 한다.\n\n공명이 신앙과 같지 않다는 걸 아는 사람에게도 이상한 거래다. 몸과 정신에 남는 힘을 화폐처럼 계약하는 관습은 이 도시의 정식 법에도, 교단 규정에도 없다.\n\n${chaosWhisper()}`,choices:[choice('계약 문구를 확인한다.',s=>s.random.returnTo,{do:s=>{gainSkill('arcana',1);knowSuspicion('일부 뒷골목에서 공명 사용 자체를 채무 상환 수단으로 거래한다.');bumpThread('society',4);advance(0,15)},noEncounter:true}),choice('아델이나 경비대에 알린다.',s=>s.random.returnTo,{do:s=>{modRep('factions','church',2,'불법 공명 채무 거래를 알렸다');bumpThread('society',5);advance(0,10)},noEncounter:true}),choice('계약 당사자들 일이다.',s=>s.random.returnTo,{do:s=>ignoreEncounter11('enc_resonance_debt',6),noEncounter:true})]},
+ enc_mithril_knock:{title:'문이 없는 곳의 노크',location:'오래된 배수로 옆',onEnter:s=>{advance(0,6);modRes({spirit:-3})},text:s=>`${encounterBadge11('enc_mithril_knock')}벽 너머에서 세 번 두드리는 소리가 난다. 일정한 간격. 잠시 뒤 두 번. 다시 세 번.\n\n배수로 지도상 이 벽 뒤에는 공간이 없다. 그런데 드워프식 금속 감각이나 높은 역사 지식이 있다면, 아주 먼 중앙에서 전해진 <b>미스릴 도어</b> 이야기의 박자와 비슷하다는 생각이 스친다.\n\n문제는 중앙대륙이 여기서 너무 멀다는 점이다.`,choices:[choice('같은 박자로 벽을 두드려본다.',s=>s.random.returnTo,{do:s=>{const r=check({stat:'wis',skill:'arcana',diff:68,label:'응답 공명'});if(r.ok){modChaos(4,'공간이 없는 벽 너머에서 응답이 돌아왔다');knowSuspicion('미스릴 도어와 유사한 공명 패턴이 변경도시 지하에서도 나타난다.');bumpThread('under',10)}advance(0,10)},noEncounter:true}),choice('위치만 기록하고 물러난다.',s=>s.random.returnTo,{do:s=>{knowSuspicion('지도상 공간이 없는 배수로 벽 너머에서 규칙적인 노크가 들렸다.');bumpThread('under',4)},noEncounter:true}),choice('배수관 소리로 치고 지나간다.',s=>s.random.returnTo,{do:s=>ignoreEncounter11('enc_mithril_knock',8),noEncounter:true})]}
+});
+
+// 랜덤 사건 제목에 계층을 표시한다. 기존 장면 본문은 그대로 보존한다.
+const render11base=render;
+render=function(){ensureV11();render11base();renderV11Hud();const sc=state&&scenes[state.scene];if(state?.scene?.startsWith('enc_')&&sc){const text=document.getElementById('sceneText');if(text&&!text.querySelector('.encBadge'))text.insertAdjacentHTML('afterbegin',encounterBadge11(state.scene)+'<br>')}};
+
+// 1.1 기록 탭: 삶의 연표와 메인 실마리를 같은 층위에서 확인한다.
+const renderSheet11base=renderSheet;
+renderSheet=function(tab){ensureV11();renderSheet11base(tab);const c=document.getElementById('sheetContent');if(!c)return;if(tab==='journal'){const th=activeThreads11();c.insertAdjacentHTML('afterbegin',`<div class="box" style="margin-bottom:12px"><h3>현재 메인 실마리</h3>${th.length?th.map(([k,v])=>`<div class="skillRow"><span>${threadLabel11(k)}</span><b>${v}</b></div>`).join(''):'<span class="dim">아직 어느 사건도 중심이 되지 않았습니다.</span>'}<p class="dim" style="font-size:11px;line-height:1.6">수치는 진행률이라기보다 이 삶이 해당 문제와 얼마나 깊게 얽혔는지를 나타냅니다. 라엔을 만나지 않아도 옛길과 지하의 문제는 진행될 수 있습니다.</p></div>`)}if(tab==='status'){c.insertAdjacentHTML('beforeend',`<div class="box" style="margin-top:12px"><h3>이번 삶의 출발</h3><div class="meta"><span>떠난 이유</span><b>${state.departure.reason||'아직 정해지지 않음'}</b><span>첫 경로</span><b>${state.departure.route||'아직 이동 전'}</b><span>변경도시 도착</span><b>${state.departure.arrived?'도착함':'아직'}</b></div></div>`)}};
+
+// 1.1 저장 마이그레이션
+const migrateV11base=migrateState;
+migrateState=function(){migrateV11base();ensureV11();state.version='1.1.0'};
+const freshV11base=freshState;
+freshState=function(){const st=freshV11base();ensureV11();return st};
 
 state=freshState();render();
 </script>
