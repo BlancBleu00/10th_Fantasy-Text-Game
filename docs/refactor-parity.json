@@ -1,0 +1,79 @@
+{
+  "baseCommit": "1eec7ae5281382c322647f2428a37fe8f6aa7374",
+  "checks": 2126,
+  "sceneCount": 284,
+  "originCount": 25,
+  "sceneChoiceChecks": 1177,
+  "failures": [],
+  "existingErrors": [
+    {
+      "label": "choice:enc_current_sailor:false:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:v11_route_people:false:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:v11_delay_echo:false:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_jiangshi_scarecrow_echo:false:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_resonance_debt:false:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_mithril_knock:false:1",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_jiangshi_talisman:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_current_sailor:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_resonant_stone:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:v11_route_signs:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:v11_route_people:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:v11_delay_echo:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_jiangshi_scarecrow_echo:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_resonance_debt:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_mithril_knock:true:0",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "choice:enc_mithril_knock:true:1",
+      "message": "ReferenceError: knowSuspicion is not defined"
+    },
+    {
+      "label": "invalid JSON (existing behavior)",
+      "message": "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    }
+  ],
+  "method": "Node VM, deterministic clock/random, DOM stub. Does not verify real browser layout."
+}

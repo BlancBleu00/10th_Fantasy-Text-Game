@@ -1,0 +1,32 @@
+name: Refactor checks
+on:
+  pull_request:
+  push:
+    branches: [refactor/split-game-structure]
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compare original and split runtime
+        run: node tests/refactor-regression.cjs
+      - name: Install browser test runtime
+        run: npm install --no-save --ignore-scripts playwright@1.62.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Compare real browser clicks and screens
+        run: node tests/browser-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-validation
+          path: browser-results/
+          if-no-files-found: ignore

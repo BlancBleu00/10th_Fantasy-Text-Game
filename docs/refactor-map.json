@@ -1,0 +1,188 @@
+{
+  "baseCommit": "1eec7ae5281382c322647f2428a37fe8f6aa7374",
+  "loadOrder": [
+    "data/config.js",
+    "data/origins.js",
+    "data/npcs.js",
+    "data/reputation.js",
+    "data/encounters.js",
+    "data/creation.js",
+    "story/dialogue.js",
+    "story/world.js",
+    "js/runtime-state.js",
+    "js/social.js",
+    "js/state-rules.js",
+    "js/dialogue.js",
+    "js/navigation.js",
+    "js/ui-persistence.js",
+    "js/combat.js",
+    "js/creation.js",
+    "js/life-systems.js",
+    "data/extensions.js",
+    "story/scenes-base.js",
+    "story/scenes-city.js",
+    "story/scenes-life.js",
+    "story/scenes-east.js",
+    "story/scenes-v11.js",
+    "js/runtime-layers.js",
+    "js/bootstrap.js"
+  ],
+  "installers": [
+    {
+      "installer": "registerBaseScenes",
+      "file": "story/scenes-base.js",
+      "originalStart": 414,
+      "originalEnd": 2544
+    },
+    {
+      "installer": "extendNpcValues",
+      "file": "data/extensions.js",
+      "originalStart": 2590,
+      "originalEnd": 2597
+    },
+    {
+      "installer": "registerCreationScenes",
+      "file": "story/scenes-city.js",
+      "originalStart": 2618,
+      "originalEnd": 2646
+    },
+    {
+      "installer": "patchNameEntryScene",
+      "file": "story/scenes-city.js",
+      "originalStart": 2653,
+      "originalEnd": 2659
+    },
+    {
+      "installer": "extendCityEncounterPool",
+      "file": "data/extensions.js",
+      "originalStart": 2688,
+      "originalEnd": 2688
+    },
+    {
+      "installer": "registerCityEncounters",
+      "file": "story/scenes-city.js",
+      "originalStart": 2693,
+      "originalEnd": 2750
+    },
+    {
+      "installer": "extendItemNames",
+      "file": "data/extensions.js",
+      "originalStart": 2753,
+      "originalEnd": 2753
+    },
+    {
+      "installer": "patchDialogueAndDeathScenes",
+      "file": "story/scenes-city.js",
+      "originalStart": 2760,
+      "originalEnd": 2783
+    },
+    {
+      "installer": "patchGuardRumorScene",
+      "file": "story/scenes-city.js",
+      "originalStart": 2791,
+      "originalEnd": 2791
+    },
+    {
+      "installer": "registerCityActivities",
+      "file": "story/scenes-city.js",
+      "originalStart": 2796,
+      "originalEnd": 2922
+    },
+    {
+      "installer": "extendLifeOrigins",
+      "file": "data/extensions.js",
+      "originalStart": 2926,
+      "originalEnd": 2935
+    },
+    {
+      "installer": "registerLifePrologues",
+      "file": "story/scenes-life.js",
+      "originalStart": 2940,
+      "originalEnd": 3076
+    },
+    {
+      "installer": "initializeNpcBaseRoles",
+      "file": "data/extensions.js",
+      "originalStart": 3103,
+      "originalEnd": 3103
+    },
+    {
+      "installer": "registerDailyLifeScenes",
+      "file": "story/scenes-life.js",
+      "originalStart": 3121,
+      "originalEnd": 3179
+    },
+    {
+      "installer": "extendLaenDialogue",
+      "file": "data/extensions.js",
+      "originalStart": 3182,
+      "originalEnd": 3186
+    },
+    {
+      "installer": "patchLifeConsequences",
+      "file": "story/scenes-life.js",
+      "originalStart": 3252,
+      "originalEnd": 3255
+    },
+    {
+      "installer": "registerChapterAftermath",
+      "file": "story/scenes-life.js",
+      "originalStart": 3312,
+      "originalEnd": 3325
+    },
+    {
+      "installer": "extendEasternData",
+      "file": "data/extensions.js",
+      "originalStart": 3360,
+      "originalEnd": 3375
+    },
+    {
+      "installer": "registerBirthRegionScenes",
+      "file": "story/scenes-east.js",
+      "originalStart": 3413,
+      "originalEnd": 3416
+    },
+    {
+      "installer": "patchRegionBackgroundScenes",
+      "file": "story/scenes-east.js",
+      "originalStart": 3419,
+      "originalEnd": 3423
+    },
+    {
+      "installer": "registerEasternScenes",
+      "file": "story/scenes-east.js",
+      "originalStart": 3455,
+      "originalEnd": 3528
+    },
+    {
+      "installer": "extendEasternEncounterPool",
+      "file": "data/extensions.js",
+      "originalStart": 3529,
+      "originalEnd": 3532
+    },
+    {
+      "installer": "patchChaosScenes",
+      "file": "story/scenes-east.js",
+      "originalStart": 3535,
+      "originalEnd": 3538
+    },
+    {
+      "installer": "registerDepartureScenes",
+      "file": "story/scenes-v11.js",
+      "originalStart": 3620,
+      "originalEnd": 3637
+    },
+    {
+      "installer": "extendMajorEncounterPool",
+      "file": "data/extensions.js",
+      "originalStart": 3651,
+      "originalEnd": 3651
+    },
+    {
+      "installer": "registerMajorEncounters",
+      "file": "story/scenes-v11.js",
+      "originalStart": 3653,
+      "originalEnd": 3659
+    }
+  ]
+}
