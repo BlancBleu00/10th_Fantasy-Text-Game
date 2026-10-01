@@ -39,3 +39,15 @@ node tests/refactor-regression.cjs
 ```sh
 node tests/refactor-regression.cjs /absolute/path/to/original-index.html
 ```
+
+## 브라우저 검증
+
+PR의 GitHub Actions에서 Chromium으로 실제 클릭 흐름과 데스크톱/모바일 화면을 비교합니다. 초기 화면 픽셀 일치, 직접 생성, 리뷰 저장/복원, 6개 탭, 의심 기록 선택지를 확인하고 결과 화면을 artifact로 남깁니다.
+
+로컬에서 실행하려면:
+
+```sh
+npm install --no-save --ignore-scripts playwright@1.62.1
+npx playwright install chromium
+node tests/browser-smoke.cjs
+```
