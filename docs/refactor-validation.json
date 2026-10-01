@@ -1,0 +1,15 @@
+{
+  "baseCommit": "1eec7ae5281382c322647f2428a37fe8f6aa7374",
+  "checks": 2127,
+  "sceneCount": 284,
+  "originCount": 25,
+  "sceneChoiceChecks": 1177,
+  "failures": [],
+  "existingErrors": [
+    {
+      "label": "invalid JSON (existing behavior)",
+      "message": "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    }
+  ],
+  "method": "Node VM, deterministic clock/random, DOM stub. Does not verify real browser layout."
+}

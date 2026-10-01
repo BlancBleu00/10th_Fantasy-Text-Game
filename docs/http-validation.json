@@ -1,0 +1,168 @@
+{
+  "servedResources": 27,
+  "allMatch": true,
+  "resources": [
+    {
+      "path": "index.html",
+      "status": 200,
+      "contentType": "text/html",
+      "bytes": 4055
+    },
+    {
+      "path": "css/game.css",
+      "status": 200,
+      "contentType": "text/css",
+      "bytes": 13436
+    },
+    {
+      "path": "data/config.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 1826
+    },
+    {
+      "path": "data/origins.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 8315
+    },
+    {
+      "path": "data/npcs.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 2161
+    },
+    {
+      "path": "data/reputation.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 4665
+    },
+    {
+      "path": "data/encounters.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 1726
+    },
+    {
+      "path": "data/creation.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 3246
+    },
+    {
+      "path": "story/dialogue.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 7240
+    },
+    {
+      "path": "story/world.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 5361
+    },
+    {
+      "path": "js/runtime-state.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 346
+    },
+    {
+      "path": "js/social.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 7116
+    },
+    {
+      "path": "js/state-rules.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 11650
+    },
+    {
+      "path": "js/dialogue.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 2246
+    },
+    {
+      "path": "js/navigation.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 11780
+    },
+    {
+      "path": "js/ui-persistence.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 11643
+    },
+    {
+      "path": "js/combat.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 5082
+    },
+    {
+      "path": "js/creation.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 4526
+    },
+    {
+      "path": "js/life-systems.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 28948
+    },
+    {
+      "path": "data/extensions.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 11813
+    },
+    {
+      "path": "story/scenes-base.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 275893
+    },
+    {
+      "path": "story/scenes-city.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 36129
+    },
+    {
+      "path": "story/scenes-life.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 31564
+    },
+    {
+      "path": "story/scenes-east.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 16802
+    },
+    {
+      "path": "story/scenes-v11.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 15256
+    },
+    {
+      "path": "js/runtime-layers.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 32540
+    },
+    {
+      "path": "js/bootstrap.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "bytes": 171
+    }
+  ]
+}

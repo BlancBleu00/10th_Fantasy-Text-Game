@@ -54,6 +54,10 @@ function createRuntime(split) {
   return { run, get, elements, storage, events, messages, setRandomSeed: n => { randomSeed = n; } };
 }
 const original = createRuntime(false), refactored = createRuntime(true);
+// The original commit calls an undefined helper. Compare the intentional fix with
+// the existing suspect() implementation, separately from the raw parity report.
+original.run('function knowSuspicion(text){return suspect(text)}');
+assert.equal(refactored.run('typeof knowSuspicion'), 'function');
 const json = (runtime, expression) => runtime.run(`JSON.stringify(${expression}, (key, value) => typeof value === 'function' ? value.toString() : value)`);
 const failures = [], existingErrors = []; let checks = 0, sceneChoiceChecks = 0;
 function compare(label, expression = '({state,pendingCombat,creationDraft,creationRegion10,currentSheet})') {
@@ -123,6 +127,9 @@ compare('consequence result','({state,testDue})');
 both('combat start', "state=createStateFromOrigin('human_farmer','남성');go('day1_hub');startCombat({name:'검증 적',hp:50,atk:8,def:2,accuracy:45,winTo:'day1_hub',fleeTo:'day1_hub',speed:30});");
 for(const action of ['guard','observe','recover','attack','heavy','resonance','flee']) both('combat:'+action,`combatAction(${JSON.stringify(action)});`);
 both('legacy save', "state=createStateFromOrigin('human_farmer','남성');delete state.world;delete state.knowledge;delete state.birthRegion;delete state.chaosResonance;delete state.mainThreads;delete state.departure;delete state.encounterPressure;delete state.ignoredEncounters;delete state.resistances;delete state.personalHistory;state.scene='intro';localStorage.setItem('fantasyFullPilot',JSON.stringify(state));loadGame();");
+both('suspicion alias dedup', "state=createStateFromOrigin('human_farmer','남성');knowSuspicion('검증용 의심');knowSuspicion('검증용 의심');");
+assert.equal(refactored.run("state.knowledge.suspicions.filter(t=>t==='검증용 의심').length"), 1);
+assert.equal(refactored.run("state.knowledge.facts.includes('검증용 의심')"), false);
 both('missing save', "localStorage.setItem('fantasyFullPilot','');loadGame();");
 both('invalid JSON (existing behavior)', "localStorage.setItem('fantasyFullPilot','{bad');loadGame();");
 const report = { baseCommit: map.baseCommit, checks, sceneCount: ids.length, originCount: origins.length, sceneChoiceChecks, failures, existingErrors, method:'Node VM, deterministic clock/random, DOM stub. Does not verify real browser layout.' };

@@ -239,3 +239,6 @@ function encounterWeight11(id){ensureV11();const m=ENCOUNTER_META_11[id]||{cat:'
 
 // Original index.html:3650
 function ignoreEncounter11(id,amount=2){ensureV11();const cat=encounterCategory11(id);state.ignoredEncounters[id]=(state.ignoredEncounters[id]||0)+1;state.encounterPressure[cat]=clamp((state.encounterPressure[cat]||0)+amount,0,100);if(cat==='social')state.city.panic=clamp(state.city.panic+1,0,100);if(cat==='local')state.world.roadSafety=clamp(state.world.roadSafety-1,0,100);if(cat==='strange')modChaos(1,'이상 현상을 확인하지 않은 채 지나쳤다')}
+
+// Scene callbacks use this name; keep the existing suspicion-recording semantics.
+function knowSuspicion(text){return suspect(text)}
