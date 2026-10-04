@@ -20,6 +20,8 @@ jobs:
         run: node tests/refactor-regression.cjs
       - name: Validate three main openings and save compatibility
         run: node tests/main-openings.cjs
+      - name: Validate regional creation and home hubs
+        run: node tests/campaign-starts.cjs
       - name: Install browser test runtime
         run: npm install --no-save --ignore-scripts playwright@1.62.1
       - name: Install Chromium
