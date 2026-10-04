@@ -12,6 +12,8 @@ fs.mkdirSync(output,{recursive:true});
 const server = http.createServer((req,res)=>{
   const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   if(pathname==='/baseline.html'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(original);return;}
+  // Legacy parity intentionally excludes the separately tested new-story feature.
+  if(pathname==='/parity.html'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script[^>]+data-feature="main-openings"[^>]*><\/script>/g,''));return;}
   const file = path.resolve(root,'.'+pathname);
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404);res.end();return;}
   const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json'};
@@ -33,7 +35,7 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
  try{
   for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
    const name=viewport.width>680?'desktop':'mobile',errors=[];
-   const a=await seededPage(browser,base+'/baseline.html',viewport,errors),b=await seededPage(browser,base+'/index.html',viewport,errors);
+   const a=await seededPage(browser,base+'/baseline.html',viewport,errors),b=await seededPage(browser,base+'/parity.html',viewport,errors);
    async function compare(label){assert.deepEqual(await snapshot(b),await snapshot(a),`${name}:${label}`);report.checks.push(`${name}:${label}`)}
    await compare('startup');
    const shotA=await a.screenshot({fullPage:true,animations:'disabled'}),shotB=await b.screenshot({fullPage:true,animations:'disabled'});
@@ -66,6 +68,27 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
    assert.deepEqual(errors,[],`${name}: browser script errors`);
    assert.equal(await b.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,`${name}: horizontal overflow`);
    report.viewports.push({name,...viewport});await a.context().close();await b.context().close();
+   const live=await seededPage(browser,base+'/index.html',viewport,errors);
+   for(let i=0;i<5;i++)await firstChoice(live);
+   await live.locator('#playerNameInput').fill('세갈래검증');await firstChoice(live);await firstChoice(live);
+   await live.getByRole('button',{name:'새 메인스토리 세 지역의 초반을 플레이한다.',exact:true}).click();
+   for(const [index,key] of ['west','east','under'].entries()){
+    await live.locator('#choices button').nth(index).click();
+    await live.locator('#choices button').first().click();
+    await live.getByRole('button',{name:'저장',exact:true}).first().click();
+    await live.reload();
+    await live.getByRole('button',{name:'불러오기',exact:true}).click();
+    assert.equal(await live.evaluate(()=>!!state.pendingReview),true);
+    await live.locator('#review .reviewContinue').click();
+    await firstChoice(live);await firstChoice(live);
+    assert.equal(await live.evaluate(()=>state.scene),`main_${key}_3`);
+    assert.equal(await live.evaluate(k=>state.mainOpenings.routes[k].status,key),'초반 완료');
+    assert.equal(await live.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await live.screenshot({path:path.join(output,`${name}-main-${key}.png`),fullPage:true,animations:'disabled'});
+    report.checks.push(`${name}: main ${key} clicks, reload, saved review, completion`);
+    await firstChoice(live);
+   }
+   assert.deepEqual(errors,[],`${name}: feature browser errors`);await live.context().close();
   }
   fs.writeFileSync(path.join(output,'browser-validation.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks:report.checks.length,viewports:report.viewports,pageErrors:report.pageErrors},null,2));
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve))}
