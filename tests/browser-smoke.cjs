@@ -13,7 +13,7 @@ const server = http.createServer((req,res)=>{
   const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   if(pathname==='/baseline.html'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(original);return;}
   // Legacy parity intentionally excludes the separately tested new-story feature.
-  if(pathname==='/parity.html'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script[^>]+data-feature="main-openings"[^>]*><\/script>/g,''));return;}
+  if(pathname==='/parity.html'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script[^>]+data-feature="[^"]+"[^>]*><\/script>/g,''));return;}
   const file = path.resolve(root,'.'+pathname);
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404);res.end();return;}
   const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json'};
@@ -69,7 +69,8 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
    assert.equal(await b.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,`${name}: horizontal overflow`);
    report.viewports.push({name,...viewport});await a.context().close();await b.context().close();
    const live=await seededPage(browser,base+'/index.html',viewport,errors);
-   for(let i=0;i<5;i++)await firstChoice(live);
+   await live.getByRole('button',{name:'이번 삶의 조건을 직접 정한다.',exact:true}).click();
+   for(let i=0;i<4;i++)await firstChoice(live);
    await live.locator('#playerNameInput').fill('세갈래검증');await firstChoice(live);await firstChoice(live);
    await live.getByRole('button',{name:'새 메인스토리 세 지역의 초반을 플레이한다.',exact:true}).click();
    for(const [index,key] of ['west','east','under'].entries()){
@@ -89,6 +90,38 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
     await firstChoice(live);
    }
    assert.deepEqual(errors,[],`${name}: feature browser errors`);await live.context().close();
+   for(const [index,key] of ['west','east','under'].entries()){
+    const regional=await seededPage(browser,base+'/index.html',viewport,errors);
+    await regional.getByRole('button',{name:'세 지역 중 시작할 곳을 고른다.',exact:true}).click();
+    await regional.locator('#choices button').nth(index).click();
+    // Draft is part of the save: a reload during creation must retain the region.
+    await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
+    await regional.getByRole('button',{name:'불러오기',exact:true}).click();
+    assert.equal(await regional.evaluate(()=>state.campaignDraft.region),key);
+    await firstChoice(regional);await firstChoice(regional);await firstChoice(regional);
+    await regional.locator('#playerNameInput').fill('지역검증');await firstChoice(regional);
+    assert.equal(await regional.evaluate(()=>state.scene),'campaign_prologue');
+    assert.equal(await regional.evaluate(()=>state.campaign.region),key);
+    await firstChoice(regional);await firstChoice(regional);await firstChoice(regional);await firstChoice(regional);
+    assert.equal(await regional.evaluate(()=>state.scene),`main_${key}_3`);await firstChoice(regional);
+    assert.equal(await regional.evaluate(()=>state.scene),'campaign_hub');
+    const cityBefore=await regional.evaluate(()=>JSON.stringify(state.city));
+    await regional.locator('#choices button').nth(1).click(); // first daily work
+    await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
+    await regional.getByRole('button',{name:'불러오기',exact:true}).click();await regional.locator('#review .reviewContinue').click();
+    assert.equal(await regional.evaluate(()=>state.campaign.workDay),await regional.evaluate(()=>state.day));
+    if(key!=='west')assert.equal(await regional.evaluate(()=>JSON.stringify(state.city)),cityBefore);
+    for(const tab of ['status','skills','resonance','relations','reputation','journal']){
+     await regional.locator(`.topbar button[onclick="openSheet('${tab}')"]`).click();
+     assert.equal((await regional.locator('#sheetContent').innerText()).includes('undefined'),false);
+     await regional.getByRole('button',{name:'닫기',exact:true}).click();
+    }
+    assert.equal(await regional.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await regional.screenshot({path:path.join(output,`${name}-regional-${key}.png`),fullPage:true,animations:'disabled'});
+    report.checks.push(`${name}: regional ${key} creation, draft save, prologue, hub, daily work save, sheets`);
+    await regional.context().close();
+   }
+   assert.deepEqual(errors,[],`${name}: regional browser errors`);
   }
   fs.writeFileSync(path.join(output,'browser-validation.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks:report.checks.length,viewports:report.viewports,pageErrors:report.pageErrors},null,2));
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve))}
