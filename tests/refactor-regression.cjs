@@ -16,7 +16,7 @@ assert.equal(/<script>([\s\S]*?)<\/script>/.test(current), false, 'Inline game s
 assert.equal(fs.readFileSync(path.join(root, 'css/game.css'), 'utf8'), baseline.match(/<style>([\s\S]*?)<\/style>/)[1].trimStart(), 'Styles changed');
 for (const file of scripts) new vm.Script(fs.readFileSync(path.join(root, file), 'utf8'), { filename: file });
 
-function createRuntime(split) {
+function createRuntime(split, includeFeatures = false) {
   const elements = new Map(), storage = new Map(), events = [], messages = [];
   let randomSeed = 7;
   const math = Object.create(Math);
@@ -49,10 +49,13 @@ function createRuntime(split) {
   };
   const context = vm.createContext(sandbox);
   const run = source => vm.runInContext(source, context, { timeout: 1500 });
-  if (split) for (const file of scripts) run(fs.readFileSync(path.join(root, file), 'utf8'));
+  const selectedScripts = includeFeatures ? [...current.matchAll(/<script src="\.\/([^"<>]+)"[^>]*><\/script>/g)].map(m=>m[1]) : scripts;
+  if (split) for (const file of selectedScripts) run(fs.readFileSync(path.join(root, file), 'utf8'));
   else run(baseline.match(/<script>([\s\S]*?)<\/script>/)[1]);
   return { run, get, elements, storage, events, messages, setRandomSeed: n => { randomSeed = n; } };
 }
+module.exports = { createRuntime };
+if (require.main === module) {
 const original = createRuntime(false), refactored = createRuntime(true);
 // The original commit calls an undefined helper. Compare the intentional fix with
 // the existing suspect() implementation, separately from the raw parity report.
@@ -136,3 +139,4 @@ const report = { baseCommit: map.baseCommit, checks, sceneCount: ids.length, ori
 if (process.env.REFACTOR_REPORT) fs.writeFileSync(process.env.REFACTOR_REPORT, JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({ checks, sceneCount: ids.length, originCount: origins.length, sceneChoiceChecks, failures, existingErrorCount: existingErrors.length },null,2));
 if(failures.length) process.exitCode=1;
+}

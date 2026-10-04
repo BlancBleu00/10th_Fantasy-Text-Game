@@ -18,6 +18,8 @@ jobs:
           node-version: 22
       - name: Compare original and split runtime
         run: node tests/refactor-regression.cjs
+      - name: Validate three main openings and save compatibility
+        run: node tests/main-openings.cjs
       - name: Install browser test runtime
         run: npm install --no-save --ignore-scripts playwright@1.62.1
       - name: Install Chromium
