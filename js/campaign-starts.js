@@ -76,8 +76,9 @@ const campaignLegacyGo=go;
 go=function(id){
  const c=state.campaign;
  if(c){
-  if(id==='main_openings'||(/^main_(west|east|under)_/.test(id)&&!id.startsWith('main_'+c.region+'_')))id='campaign_hub';
-  if(c.region!=='west'&&!['name_entry','campaign_prologue','campaign_hub','death'].includes(id)&&!id.startsWith('main_'+c.region+'_'))id='campaign_hub';
+  const localStory=id.startsWith('main_'+c.region+'_')||id.startsWith('mid_'+c.region+'_');
+  if(id==='main_openings'||(/^(main|mid)_(west|east|under)_/.test(id)&&!localStory))id='campaign_hub';
+  if(c.region!=='west'&&!['name_entry','campaign_prologue','campaign_hub','campaign_news','death'].includes(id)&&!localStory)id='campaign_hub';
   // Non-western regions do not run western city thread synchronization.
   if(c.region!=='west')return go11base(id);
  }
