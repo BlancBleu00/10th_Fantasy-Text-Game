@@ -119,6 +119,40 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
     assert.equal(await regional.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await regional.screenshot({path:path.join(output,`${name}-regional-${key}.png`),fullPage:true,animations:'disabled'});
     report.checks.push(`${name}: regional ${key} creation, draft save, prologue, hub, daily work save, sheets`);
+    if(key==='west'){
+     await regional.getByRole('button',{name:'세계수 사건의 중간부를 시작한다.',exact:true}).click();
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_gate');
+     await firstChoice(regional);await firstChoice(regional); // mandate -> survey
+     await regional.locator('#choices button').nth(1).click();
+     await regional.locator('#review .reviewContinue').click(); // archive
+     await regional.getByRole('button',{name:'사건을 보류하고 생활 거점 메뉴를 연다.',exact:false}).click();
+     await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
+     await regional.getByRole('button',{name:'불러오기',exact:true}).click();
+     await regional.getByRole('button',{name:'보류한 중간부 조사를 이어간다.',exact:true}).click();
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_archive');
+     await firstChoice(regional);await firstChoice(regional); // copy -> hearing -> crisis
+     const clock=await regional.evaluate(()=>JSON.stringify([state.day,state.hour,state.minute,state.seed]));
+     await regional.locator(".topbar button[onclick=\"openSheet('journal')\"]").click();
+     await regional.getByRole('button',{name:'닫기',exact:true}).click();
+     assert.equal(await regional.evaluate(()=>JSON.stringify([state.day,state.hour,state.minute,state.seed])),clock);
+     // Force a failed probability check but still execute through the real UI.
+     await regional.evaluate(()=>{state.seed=1900;state.skills.observation.lv=0;midgameRoute('west').risk=30;render()});
+     await regional.locator('#choices button').first().click();
+     assert.equal(await regional.evaluate(()=>midgameRoute('west').lastCheck.success),false);
+     const savedResult=await regional.evaluate(()=>JSON.stringify(state.midgame));
+     await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
+     await regional.getByRole('button',{name:'불러오기',exact:true}).click();
+     assert.equal(await regional.evaluate(()=>JSON.stringify(state.midgame)),savedResult);
+     await regional.locator('#review .reviewContinue').click();
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_recover');
+     await firstChoice(regional);await firstChoice(regional);
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_end_accord');
+     assert.equal(await regional.evaluate(()=>state.ended),false);
+     assert.equal(await regional.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+     await regional.screenshot({path:path.join(output,`${name}-midgame-west.png`),fullPage:true,animations:'disabled'});
+     report.checks.push(`${name}: west midgame pause, reload, probability failure, saved result, recovery, ending`);
+     await firstChoice(regional);assert.equal(await regional.evaluate(()=>state.scene),'campaign_hub');
+    }
     await regional.context().close();
    }
    assert.deepEqual(errors,[],`${name}: regional browser errors`);

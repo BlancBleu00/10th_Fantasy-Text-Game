@@ -22,6 +22,8 @@ jobs:
         run: node tests/main-openings.cjs
       - name: Validate regional creation and home hubs
         run: node tests/campaign-starts.cjs
+      - name: Validate western midgame branches and persistence
+        run: node tests/midgame.cjs
       - name: Install browser test runtime
         run: npm install --no-save --ignore-scripts playwright@1.62.1
       - name: Install Chromium
