@@ -89,6 +89,18 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
     report.checks.push(`${name}: main ${key} clicks, reload, saved review, completion`);
     await firstChoice(live);
    }
+   for(const success of [true,false]){
+    await live.evaluate(ok=>{state=createStateFromOrigin('human_farmer','남성');for(const k in state.stats)state.stats[k]=ok?100:1;for(const k in state.skills)state.skills[k].lv=0;recalc();state.silver=5;state.seed=7;flag('소매치기 손 포착');flag('소매치기 붙잡음');state.random.returnTo='day1_hub';go('enc_pickpocket')},success);
+    await live.getByRole('button',{name:'아이를 쫓는다.',exact:true}).click();
+    const review=await live.evaluate(()=>state.pendingReview.text);
+    assert.equal(review.includes('은화 두 닢을 받아'),success);
+    await live.getByRole('button',{name:'저장',exact:true}).first().click();await live.reload();
+    await live.getByRole('button',{name:'불러오기',exact:true}).click();
+    assert.equal(await live.evaluate(()=>state.pendingReview.text),review);
+    await live.screenshot({path:path.join(output,`${name}-prose-pickpocket-${success?'success':'failure'}.png`),fullPage:true,animations:'disabled'});
+    report.checks.push(`${name}: collision ${success?'success':'failure'} prose and saved result`);
+    await live.locator('#review .reviewContinue').click();
+   }
    assert.deepEqual(errors,[],`${name}: feature browser errors`);await live.context().close();
    for(const [index,key] of ['west','east','under'].entries()){
     const regional=await seededPage(browser,base+'/index.html',viewport,errors);
@@ -120,15 +132,17 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
     await regional.screenshot({path:path.join(output,`${name}-regional-${key}.png`),fullPage:true,animations:'disabled'});
     report.checks.push(`${name}: regional ${key} creation, draft save, prologue, hub, daily work save, sheets`);
     if(key==='west'){
-     await regional.getByRole('button',{name:'세계수 사건의 중간부를 시작한다.',exact:true}).click();
+     await regional.getByRole('button',{name:'수로 조사를 시작한다.',exact:true}).click();
      assert.equal(await regional.evaluate(()=>state.scene),'mid_west_gate');
+     assert.equal((await regional.locator('#sceneText').innerText()).length<300,true);
+     await regional.screenshot({path:path.join(output,`${name}-prose-west-gate.png`),fullPage:true,animations:'disabled'});
      await firstChoice(regional);await firstChoice(regional); // mandate -> survey
      await regional.locator('#choices button').nth(1).click();
      await regional.locator('#review .reviewContinue').click(); // archive
-     await regional.getByRole('button',{name:'사건을 보류하고 생활 거점 메뉴를 연다.',exact:false}).click();
+     await regional.getByRole('button',{name:'거점으로 돌아간다.',exact:true}).click();
      await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
      await regional.getByRole('button',{name:'불러오기',exact:true}).click();
-     await regional.getByRole('button',{name:'보류한 중간부 조사를 이어간다.',exact:true}).click();
+     await regional.getByRole('button',{name:'수로 조사를 이어간다.',exact:true}).click();
      assert.equal(await regional.evaluate(()=>state.scene),'mid_west_archive');
      await firstChoice(regional);await firstChoice(regional); // copy -> hearing -> crisis
      const clock=await regional.evaluate(()=>JSON.stringify([state.day,state.hour,state.minute,state.seed]));
