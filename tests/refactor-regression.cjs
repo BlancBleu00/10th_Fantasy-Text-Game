@@ -16,7 +16,7 @@ assert.equal(/<script>([\s\S]*?)<\/script>/.test(current), false, 'Inline game s
 assert.equal(fs.readFileSync(path.join(root, 'css/game.css'), 'utf8'), baseline.match(/<style>([\s\S]*?)<\/style>/)[1].trimStart(), 'Styles changed');
 for (const file of scripts) new vm.Script(fs.readFileSync(path.join(root, file), 'utf8'), { filename: file });
 
-function createRuntime(split, includeFeatures = false) {
+function createRuntime(split, includeFeatures = false, excludedScripts = []) {
   const elements = new Map(), storage = new Map(), events = [], messages = [];
   let randomSeed = 7;
   const math = Object.create(Math);
@@ -50,7 +50,7 @@ function createRuntime(split, includeFeatures = false) {
   const context = vm.createContext(sandbox);
   const run = source => vm.runInContext(source, context, { timeout: 1500 });
   const selectedScripts = includeFeatures ? [...current.matchAll(/<script src="\.\/([^"<>]+)"[^>]*><\/script>/g)].map(m=>m[1]) : scripts;
-  if (split) for (const file of selectedScripts) run(fs.readFileSync(path.join(root, file), 'utf8'));
+  if (split) for (const file of selectedScripts.filter(file=>!excludedScripts.includes(file))) run(fs.readFileSync(path.join(root, file), 'utf8'));
   else run(baseline.match(/<script>([\s\S]*?)<\/script>/)[1]);
   return { run, get, elements, storage, events, messages, setRandomSeed: n => { randomSeed = n; } };
 }

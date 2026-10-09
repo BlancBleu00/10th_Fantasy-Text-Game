@@ -70,18 +70,17 @@ function midgameProgress(key){
 }
 function midgameReview(key){
  const r=midgameRoute(key),c=r.lastCheck;
- return r.lastResult+(c?`\n\n${SKILL_NAMES[c.skill]} 판정: ${c.chance}% / 주사위 ${c.roll} — ${c.success?'성공':'실패'}`:'')+
-  '\n\n'+midgameProgress(key);
+ return r.lastResult+(c?`\n\n${SKILL_NAMES[c.skill]}: ${c.success?'성공':'실패'} (${c.chance}% · 주사위 ${c.roll})`:'');
 }
 function midgameEntry(key){
  const r=midgameRoute(key);
- return choice(r?.ending?'중간부에서 남긴 결말을 돌아본다.':r?'보류한 중간부 조사를 이어간다.':'세계수 사건의 중간부를 시작한다.',
+ return choice(r?.ending?'조사 결과를 돌아본다.':r?'수로 조사를 이어간다.':'수로 조사를 시작한다.',
   ()=>midgameScene(key,midgameRoute(key).node),{noEncounter:true,review:false,
    if:()=>midgameAvailable(key),do:()=>midgameBegin(key)});
 }
 function midgamePause(key,node){
- return choice('사건을 보류하고 생활 거점 메뉴를 연다.','campaign_hub',{
-  noEncounter:true,review:false,hint:'진행은 그대로 보존됩니다. 메뉴 전환에는 시간이 들지 않습니다.',
+ return choice('거점으로 돌아간다.','campaign_hub',{
+  noEncounter:true,review:false,
   do:()=>{if(state.pendingReview||state.scene!==midgameScene(key,node)||midgameRoute(key)?.node!==node)return false;}
  });
 }
@@ -95,17 +94,16 @@ for(const key of MIDGAME_ENABLED){
    text:()=>{
     const r=midgameRoute(key);
     if(!r)return '생활 거점에서 중간부를 시작해 주세요.';
-    const lead=node==='gate'&&r.openingStance==='초반 불참'?'초반 조사에는 참여하지 않았지만, 교역소에 돌아온 조사 기록을 함께 확인한다.\n\n':'';
-    return lead+definition.text+'\n\n<b>현재 조사</b>\n'+midgameProgress(key)+
-     '\n초반의 입장: '+escapeHtml(r.openingStance)+(r.lastResult?'\n\n<b>지난 행동</b>\n'+escapeHtml(r.lastResult):'');
+    const lead=node==='gate'&&r.openingStance==='초반 불참'?'교역소에서 수로가 막혔다는 소식을 듣고 찾아왔습니다.\n\n':'';
+    return lead+definition.text;
    },
    choices:()=>{
     const r=midgameRoute(key);
     if(!r||r.node!==node)return [choice('저장된 진행 지점으로 돌아간다.',r?midgameScene(key,r.node):'campaign_hub',{noEncounter:true,review:false})];
     return [...definition.choices.map(o=>choice(o.label,()=>midgameScene(key,midgameRoute(key).node),{
-     noEncounter:true,do:()=>midgameAct(key,node,o.id),review:()=>midgameReview(key),
+     noEncounter:true,do:()=>midgameAct(key,node,o.id),review:()=>midgameReview(key),reviewOnly:true,
      ...(o.requires?{req:{midgame:{region:key,values:o.requires}}}:{}),
-     hint:(o.check?`${SKILL_NAMES[o.check.skill]} 성공 확률 ${midgameChance(key,o)}% · 실패해도 이야기는 이어집니다. / `:'')+
+     hint:(o.check?`${SKILL_NAMES[o.check.skill]} ${midgameChance(key,o)}% / `:'')+
       `${o.minutes??60}분`+(o.stamina?` · 기력 ${o.stamina}`:'')
     })),midgamePause(key,node)];
    }
@@ -114,8 +112,7 @@ for(const key of MIDGAME_ENABLED){
  for(const [id,ending] of Object.entries(MIDGAME_ENDINGS[key])){
   const node='end_'+id;
   scenes[midgameScene(key,node)]={title:ending.title,location:MIDGAME_META[key].place,
-   text:()=>ending.text+'\n\n<b>중간부 완료</b>\n'+midgameProgress(key)+
-    '\n\n이번 결과는 지역 사건의 결말이며, 캐릭터의 삶을 끝내지 않습니다. 생활 거점과 기존 서부 콘텐츠를 계속 이용할 수 있습니다. 종장과 정수 획득은 아직 열리지 않았습니다.',
+   text:()=>ending.text+'\n\n<b>수로 조사 완료</b>\n거점에서 생활을 이어갈 수 있습니다.',
    choices:()=>[midgamePause(key,node)]};
  }
  const final=scenes[mainOpeningScene(key,3)],oldChoices=final.choices,oldText=final.text;
