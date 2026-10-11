@@ -75,7 +75,7 @@ r.run('continueReview()');eq(r.run('state.scene'),'mid_west_recover');
 // No forward/backward teleport, region mixing, implicit upgrade, or demo conversion.
 r.run("go('mid_west_end_accord')");eq(r.run('state.scene'),'mid_west_recover');
 r.run("go('mid_east_gate')");eq(r.run('state.scene'),'campaign_hub');
-for(const region of ['east','under']){
+for(const region of ['under']){
  r.run(`restartConfirm();beginCampaignCreation('${region}');createCampaignCharacter(campaignOrigins('${region}')[0].key,'여성');`);
  r.get('playerNameInput').value='격리검증';choose(0);choose(0);choose(0);choose(0);choose(0);
  eq(r.run(`midgameBegin('${region}')`),false);eq(r.run('state.midgame'),undefined);
@@ -83,5 +83,5 @@ for(const region of ['east','under']){
 }
 r.run(`state=createStateFromOrigin('${origin}','남성');state.scene='intro';saveGame();loadGame();render()`);
 eq(r.run('state.midgame'),undefined);eq(r.run("midgameBegin('west')"),false);
-eq(r.run("Object.keys(scenes).filter(k=>k.startsWith('mid_')).length"),13);
+eq(r.run("Object.keys(scenes).filter(k=>k.startsWith('mid_')).length"),26);
 console.log(JSON.stringify({checks,edges,ends,scenes:nodes.size,endings:[...endings],origins:origins.length,failures:0}));

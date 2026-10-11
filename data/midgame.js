@@ -1,5 +1,5 @@
 // Enable regions only after their full runtime and branch tests pass.
-const MIDGAME_ENABLED=['west'];
+const MIDGAME_ENABLED=['west','east'];
 const MIDGAME_META={
  west:{title:'중간부 · 들리지 않는 뿌리',place:'베스페리아 · 세계수 외곽 수로',peer:'서부의 독립 조사자',opening:'세계수 바깥에서 확인한 이상이 인근 수로와 주민의 삶으로 번진다.'},
  east:{title:'중간부 · 왕에게 가는 증언',place:'천관 · 산길과 용왕의 연락소',peer:'동부의 실종자 추적자',opening:'빈 안장 뒤에 남은 길을 따라가면 용왕의 소집과 오래된 전쟁의 기록이 만난다.'},
