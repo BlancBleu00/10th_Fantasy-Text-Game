@@ -24,6 +24,8 @@ jobs:
         run: node tests/campaign-starts.cjs
       - name: Validate western midgame branches and persistence
         run: node tests/midgame.cjs
+      - name: Validate eastern midgame branches and persistence
+        run: node tests/east-midgame.cjs
       - name: Validate compact prose and unchanged gameplay
         run: node tests/prose-refresh.cjs
       - name: Install browser test runtime

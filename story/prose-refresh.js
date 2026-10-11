@@ -127,6 +127,6 @@ pickpocketChoices[2].review=()=> '아이를 따라가지 않고 골목을 빠져
 // At regional hubs, keep implementation boundaries out of the story paragraph.
 scenes.campaign_hub.text=()=>{
  const key=state.campaign.region,r=state.mainOpenings?.routes?.[key],mid=midgameRoute(key);
- return CAMPAIGN_HOME_TEXT[key]+(mid?.ending?'\n\n수로 조사를 마쳤습니다.':
-  key!=='west'&&r?.step===3?'\n\n이 지역의 이야기는 여기까지입니다. 거점 생활은 계속할 수 있습니다.':'');
+ return CAMPAIGN_HOME_TEXT[key]+(mid?.ending?(key==='east'?'\n\n실종된 사자의 수색을 마쳤습니다.':'\n\n수로 조사를 마쳤습니다.'):
+  !MIDGAME_ENABLED.includes(key)&&r?.step===3?'\n\n이 지역의 이야기는 여기까지입니다. 거점 생활은 계속할 수 있습니다.':'');
 };

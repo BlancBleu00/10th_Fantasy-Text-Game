@@ -11,12 +11,13 @@ function midgameSeed(key){
  if(p[0]==='rescue')support++;
  if(p[0]==='listen')evidence++;
  if(p[1]==='trace')evidence++;else if(p[1]==='testimony')support++;
+ if(key==='east'){if(p[0]==='track')support++;if(p[0]==='ledger')evidence++;if(p[1]==='compare')evidence++;if(p[1]==='witness')support++;}
  if(p[2]==='ally')support+=2;
  else if(['public','protect','neutral'].includes(p[2])){evidence++;support++;}
  else if(['independent','claim'].includes(p[2]))evidence++;
  return {node:'gate',status:'진행 중',evidence,support,risk:0,history:[],ending:null,
   openingStance:opening.stance||'초반 불참',lastResult:opening.status==='불참'?
-   '초반에는 물러났지만, 수로의 문제를 듣고 뒤늦게 조사에 합류했다. 처음 조사한 사람들의 기록부터 확인해야 한다.':
+   (key==='east'?'역참으로 돌아와 실종자 수색에 합류했습니다.':'초반에는 물러났지만, 수로의 문제를 듣고 뒤늦게 조사에 합류했다. 처음 조사한 사람들의 기록부터 확인해야 한다.'):
    '초반의 선택을 이어받았다: '+opening.stance};
 }
 function midgameBegin(key){
@@ -25,7 +26,7 @@ function midgameBegin(key){
  if(!midgameRoute(key)){
   state.midgame??={version:1,routes:{}};state.midgame.routes??={};
   state.midgame.routes[key]=midgameSeed(key);
-  quest('mid_'+key,MIDGAME_META[key].title,'외곽 수로의 조사와 주민의 안전을 함께 확인한다.');
+  quest('mid_'+key,MIDGAME_META[key].title,key==='east'?'실종된 사자를 찾고 연락통의 행방을 확인한다.':'외곽 수로의 조사와 주민의 안전을 함께 확인한다.');
   lifeRecord('중간부 시작',MIDGAME_META[key].title+' — '+midgameRoute(key).openingStance);
  }
 }
@@ -74,7 +75,8 @@ function midgameReview(key){
 }
 function midgameEntry(key){
  const r=midgameRoute(key);
- return choice(r?.ending?'조사 결과를 돌아본다.':r?'수로 조사를 이어간다.':'수로 조사를 시작한다.',
+ const task=key==='east'?'사자 수색을':'수로 조사를';
+ return choice(r?.ending?'조사 결과를 돌아본다.':r?task+' 이어간다.':task+' 시작한다.',
   ()=>midgameScene(key,midgameRoute(key).node),{noEncounter:true,review:false,
    if:()=>midgameAvailable(key),do:()=>midgameBegin(key)});
 }
@@ -94,7 +96,7 @@ for(const key of MIDGAME_ENABLED){
    text:()=>{
     const r=midgameRoute(key);
     if(!r)return '생활 거점에서 중간부를 시작해 주세요.';
-    const lead=node==='gate'&&r.openingStance==='초반 불참'?'교역소에서 수로가 막혔다는 소식을 듣고 찾아왔습니다.\n\n':'';
+    const lead=node==='gate'&&r.openingStance==='초반 불참'?(key==='east'?'역참에 돌아오니 수색대가 출발을 준비하고 있습니다.\n\n':'교역소에서 수로가 막혔다는 소식을 듣고 찾아왔습니다.\n\n'):'';
     return lead+definition.text;
    },
    choices:()=>{
@@ -112,7 +114,7 @@ for(const key of MIDGAME_ENABLED){
  for(const [id,ending] of Object.entries(MIDGAME_ENDINGS[key])){
   const node='end_'+id;
   scenes[midgameScene(key,node)]={title:ending.title,location:MIDGAME_META[key].place,
-   text:()=>ending.text+'\n\n<b>수로 조사 완료</b>\n거점에서 생활을 이어갈 수 있습니다.',
+   text:()=>ending.text+'\n\n<b>'+(key==='east'?'사자 수색 완료':'수로 조사 완료')+'</b>\n거점에서 생활을 이어갈 수 있습니다.',
    choices:()=>[midgamePause(key,node)]};
  }
  const final=scenes[mainOpeningScene(key,3)],oldChoices=final.choices,oldText=final.text;

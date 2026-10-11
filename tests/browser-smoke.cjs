@@ -28,6 +28,8 @@ async function seededPage(browser,url,viewport,errors){
  return page;
 }
 async function snapshot(page){return page.evaluate(()=>({state:JSON.parse(JSON.stringify(state)),sceneTitle:document.getElementById('sceneTitle').textContent,sceneMeta:document.getElementById('sceneMeta').textContent,text:document.getElementById('sceneText').innerHTML,choices:[...document.querySelectorAll('#choices button')].map(b=>({text:b.innerHTML,disabled:b.disabled})),review:document.getElementById('review').innerHTML,hud:document.getElementById('v11hud').innerHTML,strip:document.getElementById('recordStrip').innerHTML,sheet:document.getElementById('sheetContent').innerHTML,pendingCombat:!!pendingCombat}))}
+async function showMore(page){if(await page.locator('#gameMore').count()){if(await page.locator('#titleScreen').isVisible())await page.getByRole('button',{name:'시작',exact:true}).click();await page.locator('#gameMore').evaluate(el=>el.open=true)}}
+async function menuClick(page,name){await showMore(page);await page.getByRole('button',{name,exact:true}).first().click()}
 async function firstChoice(page){await page.locator('#choices button:not([disabled])').first().click();if(await page.locator('#review .reviewContinue').count())await page.locator('#review .reviewContinue').click()}
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}`;
@@ -52,7 +54,7 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
    }
    await compare('manual creation and prologue');
    // Pending-review persistence: save/load must not run destination onEnter.
-   for(const page of [a,b]){await page.locator('#choices button:not([disabled])').first().click();await page.getByRole('button',{name:'저장',exact:true}).first().click();await page.getByRole('button',{name:'불러오기',exact:true}).click()}
+   for(const page of [a,b]){await page.locator('#choices button:not([disabled])').first().click();await menuClick(page,'저장');await menuClick(page,'불러오기')}
    await compare('saved review restored');
    for(const page of [a,b])if(await page.locator('#review .reviewContinue').count())await page.locator('#review .reviewContinue').click();
    await compare('continue review');
@@ -69,6 +71,7 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
    assert.equal(await b.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,`${name}: horizontal overflow`);
    report.viewports.push({name,...viewport});await a.context().close();await b.context().close();
    const live=await seededPage(browser,base+'/index.html',viewport,errors);
+   await live.getByRole('button',{name:'시작',exact:true}).click();await menuClick(live,'기존 시작 방식');
    await live.getByRole('button',{name:'이번 삶의 조건을 직접 정한다.',exact:true}).click();
    for(let i=0;i<4;i++)await firstChoice(live);
    await live.locator('#playerNameInput').fill('세갈래검증');await firstChoice(live);await firstChoice(live);
@@ -76,9 +79,9 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
    for(const [index,key] of ['west','east','under'].entries()){
     await live.locator('#choices button').nth(index).click();
     await live.locator('#choices button').first().click();
-    await live.getByRole('button',{name:'저장',exact:true}).first().click();
+    await menuClick(live,'저장');
     await live.reload();
-    await live.getByRole('button',{name:'불러오기',exact:true}).click();
+    await menuClick(live,'불러오기');
     assert.equal(await live.evaluate(()=>!!state.pendingReview),true);
     await live.locator('#review .reviewContinue').click();
     await firstChoice(live);await firstChoice(live);
@@ -94,8 +97,8 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
     await live.getByRole('button',{name:'아이를 쫓는다.',exact:true}).click();
     const review=await live.evaluate(()=>state.pendingReview.text);
     assert.equal(review.includes('은화 두 닢을 받아'),success);
-    await live.getByRole('button',{name:'저장',exact:true}).first().click();await live.reload();
-    await live.getByRole('button',{name:'불러오기',exact:true}).click();
+    await menuClick(live,'저장');await live.reload();
+    await menuClick(live,'불러오기');
     assert.equal(await live.evaluate(()=>state.pendingReview.text),review);
     await live.screenshot({path:path.join(output,`${name}-prose-pickpocket-${success?'success':'failure'}.png`),fullPage:true,animations:'disabled'});
     report.checks.push(`${name}: collision ${success?'success':'failure'} prose and saved result`);
@@ -104,11 +107,24 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
    assert.deepEqual(errors,[],`${name}: feature browser errors`);await live.context().close();
    for(const [index,key] of ['west','east','under'].entries()){
     const regional=await seededPage(browser,base+'/index.html',viewport,errors);
-    await regional.getByRole('button',{name:'세 지역 중 시작할 곳을 고른다.',exact:true}).click();
+    assert.equal(await regional.locator('#titleScreen').isVisible(),true);
+    assert.equal(await regional.locator('.topbar').isVisible(),false);
+    assert.equal(await regional.locator('#choices').isVisible(),false);
+    if(index===0)await regional.screenshot({path:path.join(output,`${name}-clean-start.png`),fullPage:true,animations:'disabled'});
+    await regional.getByRole('button',{name:'시작',exact:true}).click();
+    assert.equal(await regional.locator('#gameMore').getAttribute('open'),null);
+    const beforeMenu=await regional.evaluate(()=>JSON.stringify([state.day,state.hour,state.minute,state.seed]));
+    await regional.locator('#gameMore > summary').focus();await regional.keyboard.press('Enter');
+    assert.equal(await regional.locator('.topbar').isVisible(),true);
+    assert.equal((await regional.locator('#recordStrip').innerText()).includes('삶의 숙련'),false);
+    assert.equal((await regional.locator('#v11hud').innerText()).includes('지금 이 삶이 붙잡고 있는 것'),false);
+    await regional.keyboard.press('Escape');assert.equal(await regional.locator('.topbar').isVisible(),false);
+    assert.equal(await regional.evaluate(()=>JSON.stringify([state.day,state.hour,state.minute,state.seed])),beforeMenu);
+    report.checks.push(`${name}: ${key} clean title and keyboard more menu`);
     await regional.locator('#choices button').nth(index).click();
     // Draft is part of the save: a reload during creation must retain the region.
-    await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
-    await regional.getByRole('button',{name:'불러오기',exact:true}).click();
+    await menuClick(regional,'저장');await regional.reload();
+    await menuClick(regional,'불러오기');
     assert.equal(await regional.evaluate(()=>state.campaignDraft.region),key);
     await firstChoice(regional);await firstChoice(regional);await firstChoice(regional);
     await regional.locator('#playerNameInput').fill('지역검증');await firstChoice(regional);
@@ -119,52 +135,55 @@ async function firstChoice(page){await page.locator('#choices button:not([disabl
     assert.equal(await regional.evaluate(()=>state.scene),'campaign_hub');
     const cityBefore=await regional.evaluate(()=>JSON.stringify(state.city));
     await regional.locator('#choices button').nth(1).click(); // first daily work
-    await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
-    await regional.getByRole('button',{name:'불러오기',exact:true}).click();await regional.locator('#review .reviewContinue').click();
+    await menuClick(regional,'저장');await regional.reload();
+    await menuClick(regional,'불러오기');await regional.locator('#review .reviewContinue').click();
     assert.equal(await regional.evaluate(()=>state.campaign.workDay),await regional.evaluate(()=>state.day));
     if(key!=='west')assert.equal(await regional.evaluate(()=>JSON.stringify(state.city)),cityBefore);
     for(const tab of ['status','skills','resonance','relations','reputation','journal']){
-     await regional.locator(`.topbar button[onclick="openSheet('${tab}')"]`).click();
+     await showMore(regional);await regional.locator(`.topbar button[onclick="openSheet('${tab}')"]`).click();
      assert.equal((await regional.locator('#sheetContent').innerText()).includes('undefined'),false);
      await regional.getByRole('button',{name:'닫기',exact:true}).click();
     }
     assert.equal(await regional.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await regional.screenshot({path:path.join(output,`${name}-regional-${key}.png`),fullPage:true,animations:'disabled'});
     report.checks.push(`${name}: regional ${key} creation, draft save, prologue, hub, daily work save, sheets`);
-    if(key==='west'){
-     await regional.getByRole('button',{name:'수로 조사를 시작한다.',exact:true}).click();
-     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_gate');
+    if(key==='west'||key==='east'){
+     await regional.locator('#gameMore').evaluate(el=>el.open=false);
+     await regional.getByRole('button',{name:key==='west'?'수로 조사를 시작한다.':'사자 수색을 시작한다.',exact:true}).click();
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_'+key+'_gate');
      assert.equal((await regional.locator('#sceneText').innerText()).length<300,true);
-     await regional.screenshot({path:path.join(output,`${name}-prose-west-gate.png`),fullPage:true,animations:'disabled'});
+     assert.equal(await regional.locator('.topbar').isVisible(),false);
+     await regional.screenshot({path:path.join(output,`${name}-prose-${key}-gate.png`),fullPage:true,animations:'disabled'});
      await firstChoice(regional);await firstChoice(regional); // mandate -> survey
      await regional.locator('#choices button').nth(1).click();
      await regional.locator('#review .reviewContinue').click(); // archive
      await regional.getByRole('button',{name:'거점으로 돌아간다.',exact:true}).click();
-     await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
-     await regional.getByRole('button',{name:'불러오기',exact:true}).click();
-     await regional.getByRole('button',{name:'수로 조사를 이어간다.',exact:true}).click();
-     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_archive');
+     await menuClick(regional,'저장');await regional.reload();
+     await menuClick(regional,'불러오기');
+     await regional.getByRole('button',{name:key==='west'?'수로 조사를 이어간다.':'사자 수색을 이어간다.',exact:true}).click();
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_'+key+'_archive');
      await firstChoice(regional);await firstChoice(regional); // copy -> hearing -> crisis
      const clock=await regional.evaluate(()=>JSON.stringify([state.day,state.hour,state.minute,state.seed]));
-     await regional.locator(".topbar button[onclick=\"openSheet('journal')\"]").click();
+     await showMore(regional);await regional.locator(".topbar button[onclick=\"openSheet('journal')\"]").click();
      await regional.getByRole('button',{name:'닫기',exact:true}).click();
      assert.equal(await regional.evaluate(()=>JSON.stringify([state.day,state.hour,state.minute,state.seed])),clock);
      // Force a failed probability check but still execute through the real UI.
-     await regional.evaluate(()=>{state.seed=1900;state.skills.observation.lv=0;midgameRoute('west').risk=30;render()});
+     await regional.evaluate(k=>{state.seed=1900;state.skills[k==='east'?'persuasion':'observation'].lv=0;midgameRoute(k).risk=30;render()},key);
      await regional.locator('#choices button').first().click();
-     assert.equal(await regional.evaluate(()=>midgameRoute('west').lastCheck.success),false);
+     assert.equal(await regional.evaluate(k=>midgameRoute(k).lastCheck.success,key),false);
      const savedResult=await regional.evaluate(()=>JSON.stringify(state.midgame));
-     await regional.getByRole('button',{name:'저장',exact:true}).first().click();await regional.reload();
-     await regional.getByRole('button',{name:'불러오기',exact:true}).click();
+     await menuClick(regional,'저장');await regional.reload();
+     await menuClick(regional,'불러오기');
      assert.equal(await regional.evaluate(()=>JSON.stringify(state.midgame)),savedResult);
      await regional.locator('#review .reviewContinue').click();
-     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_recover');
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_'+key+'_recover');
      await firstChoice(regional);await firstChoice(regional);
-     assert.equal(await regional.evaluate(()=>state.scene),'mid_west_end_accord');
+     assert.equal(await regional.evaluate(()=>state.scene),'mid_'+key+'_end_accord');
      assert.equal(await regional.evaluate(()=>state.ended),false);
      assert.equal(await regional.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-     await regional.screenshot({path:path.join(output,`${name}-midgame-west.png`),fullPage:true,animations:'disabled'});
-     report.checks.push(`${name}: west midgame pause, reload, probability failure, saved result, recovery, ending`);
+     await regional.locator('#gameMore').evaluate(el=>el.open=false);
+     await regional.screenshot({path:path.join(output,`${name}-midgame-${key}.png`),fullPage:true,animations:'disabled'});
+     report.checks.push(`${name}: ${key} midgame pause, reload, probability failure, saved result, recovery, ending`);
      await firstChoice(regional);assert.equal(await regional.evaluate(()=>state.scene),'campaign_hub');
     }
     await regional.context().close();
